@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Leave;
 use App\Models\Attendance;
 use App\Models\Member;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Carbon\CarbonPeriod;
 
@@ -24,7 +25,7 @@ class LeaveController extends Controller
     // Apply Leave
     public function apply(Request $request)
     {
-        Leave::create([
+        $leave = Leave::create([
             'member_id' => session('member_id'),
             'leave_type' => $request->leave_type,
             'start_date' => $request->start_date,
@@ -32,6 +33,13 @@ class LeaveController extends Controller
             'reason' => $request->reason,
             'status' => 'pending'
         ]);
+
+        AuditLog::logActivity(
+        session('member_id'),
+        'Applied',
+        'Leave Management',
+        'Applied for leave from ' . $leave->start_date . ' to ' . $leave->end_date
+    );
 
         return back()->with('success', 'Leave request submitted');
     }
@@ -59,7 +67,14 @@ class LeaveController extends Controller
             'approved_at' => now()
         ]);
 
-        // Mark attendance as leave
+        AuditLog::logActivity(
+    $approverId,
+    'Approved',
+    'Leave Management',
+    'Approved leave for ' . $leave->member->full_name .
+    ' from ' . $leave->start_date . ' to ' . $leave->end_date
+);
+
         $period = CarbonPeriod::create($leave->start_date, $leave->end_date);
 
         foreach ($period as $date) {
@@ -104,13 +119,21 @@ class LeaveController extends Controller
             'approved_at' => now()
         ]);
 
+        AuditLog::logActivity(
+    $approverId,
+    'Rejected',
+    'Leave Management',
+    'Rejected leave for ' . $leave->member->full_name .
+    ' from ' . $leave->start_date . ' to ' . $leave->end_date
+);
+
         return back()->with('success', 'Leave rejected successfully.');
     }
 
-    // Role Hierarchy Logic
+    
     private function canApprove($approverId, $approverRoleId, $applicantId, $applicantRoleId)
     {
-        // Cannot approve own leave
+        
         if ($approverId == $applicantId) {
             return false;
         }
