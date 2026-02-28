@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\Member;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Models\AuditLog;
 
 class TaskController extends Controller
 {
@@ -30,7 +31,14 @@ class TaskController extends Controller
             'due_date' => 'required'
         ]);
 
-        Task::create($request->all());
+        $task = Task::create($request->all());
+
+        AuditLog::logActivity(
+            session('member_id'),
+            'Created',
+            'Task Management',
+            'Assigned task: ' . $task->task_title
+        );
 
         return redirect()->back()->with('success', 'Task assigned successfully');
     }
@@ -39,12 +47,19 @@ class TaskController extends Controller
 {
     $task = Task::with(['project', 'member'])->findOrFail($id);
 
+    AuditLog::logActivity(
+        session('member_id'),
+        'Viewed',
+        'Task Management',
+        'Viewed task: ' . $task->task_title
+    );
+
     return view('pages.task-view', compact('task'));
 }
 
 public function edit($id)
 {
-    $tasks = Task::with(['project', 'member'])->get();
+    $tasks = Task::with(['project', 'member'])->paginate(5);
     $editTask = Task::findOrFail($id);
 
     $employees = Member::where('role_id', 5)->get();
@@ -67,6 +82,30 @@ public function update(Request $request, $id)
         'task_description' => $request->task_description,
     ]);
 
+    AuditLog::logActivity(
+            session('member_id'),
+            'Updated',
+            'Task Management',
+            'Updated task: ' . $task->task_title
+        );
+
     return redirect()->route('tasks')->with('success', 'Task Updated Successfully');
 }
+
+// public function destroy($id)
+//     {
+//         $task = Task::findOrFail($id);
+//         $taskTitle = $task->task_title;
+
+//         $task->delete();
+
+//         AuditLog::logActivity(
+//             session('member_id'),
+//             'Deleted',
+//             'Task Management',
+//             'Deleted task: ' . $taskTitle
+//         );
+
+//         return redirect()->route('tasks')->with('success', 'Task Deleted Successfully');
+//     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 use App\Models\AuditLog;
-use Illuminate\Http\Request;
 
 class AuditLogController extends Controller
 {
     public function index()
     {
         $logs = AuditLog::with('member')
+            ->whereDate('created_at', now())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Hash;
+use App\Models\AuditLog;
 use App\Models\Member;
 use App\Models\Role;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class UserController extends Controller
             'role_id'   => 'required',
         ]);
 
-        Member::create([
+       $user = Member::create([
             'full_name' => $request->full_name,
             'email'     => $request->email,
             'password'  => Hash::make('employee@123'),
@@ -33,12 +34,19 @@ class UserController extends Controller
             'status'    => $request->status,
         ]);
 
+        AuditLog::logActivity(
+        session('member_id'),
+        'Create',
+        'User Management',
+        'Created user: ' . $user->full_name
+    );
+
         return redirect()->route('users')->with('success', 'User created. Default password is: employee@123');
     }
 
     public function edit($id)
     {
-        $users = Member::with('role')->get();
+        $users = Member::with('role')->paginate(5);
         $roles = Role::all();
         $editUser = Member::findOrFail($id);
 
@@ -62,6 +70,12 @@ class UserController extends Controller
             'role_id' => $request->role_id,
             'status' => $request->status,
         ]);
+        AuditLog::logActivity(
+        session('member_id'),
+        'Update',
+        'User Management',
+        'Updated user: ' . $user->full_name
+    );
 
         return redirect()->route('users')->with('success', 'User updated successfully');
     }
@@ -75,7 +89,16 @@ class UserController extends Controller
             return redirect()->route('users');
         }
 
+        $deletedUserName = $user->full_name;
+
         $user->delete();
+
+        AuditLog::logActivity(
+        session('member_id'),
+        'Delete',
+        'User Management',
+        'Deleted user: ' . $deletedUserName
+    );
 
         return redirect()->route('users')
             ->with('success', 'User deleted successfully');
