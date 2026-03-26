@@ -61,6 +61,7 @@ class MembersController extends Controller
         );
         return redirect()->route('dashboard');
     }
+    
 
     public function logout()
     {

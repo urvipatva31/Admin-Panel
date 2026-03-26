@@ -92,20 +92,20 @@ public function update(Request $request, $id)
     return redirect()->route('tasks')->with('success', 'Task Updated Successfully');
 }
 
-// public function destroy($id)
-//     {
-//         $task = Task::findOrFail($id);
-//         $taskTitle = $task->task_title;
+public function destroy($id)
+    {
+        $task = Task::findOrFail($id);
+        $taskTitle = $task->task_title;
 
-//         $task->delete();
+        $task->delete();
 
-//         AuditLog::logActivity(
-//             session('member_id'),
-//             'Deleted',
-//             'Task Management',
-//             'Deleted task: ' . $taskTitle
-//         );
+        AuditLog::logActivity(
+            session('member_id'),
+            'Deleted',
+            'Task Management',
+            'Deleted task: ' . $taskTitle
+        );
 
-//         return redirect()->route('tasks')->with('success', 'Task Deleted Successfully');
-//     }
+        return redirect()->route('tasks')->with('success', 'Task Deleted Successfully');
+    }
 }

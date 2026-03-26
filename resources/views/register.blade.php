@@ -1,22 +1,11 @@
 @extends('layouts.app')
 @section('main')
 
-<body>
     <div class="login-page">
         <div class="header-section">
             <h2>Admin Portal</h2>
             <p>Create your account to get started</p>
         </div>
-
-        @if ($errors->any())
-        <div style="color:red">
-            <ul>
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
 
         <form action="{{ route('register.post') }}" method="post" class="wide-form">
 
@@ -64,7 +53,17 @@
 
             <button type="submit" class="btn-submit">Register</button>
             <p class="register-link">Already registered? <a href="login">Login here</a></p>
+
+            @if ($errors->any())
+    <div style="color: red; margin-top: 10px;">
+        <ul style="margin: 0; padding-left: 18px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
         </form>
     </div>
-</body>
+
 @endsection

@@ -114,7 +114,7 @@
                 @forelse($reports as $report)
                 <tr>
                     <td>{{ $report->report_name }}</td>
-                    <td>{{ $report->full_name }}</td>
+                    <td>{{ $report->full_name ?? 'N/A' }}</td>
                     <td>{{ \Carbon\Carbon::parse($report->created_at)->format('Y-m-d') }}</td>
                     <td>
                         <span class="status-badge {{ $report->status == 'ready' ? 'completed' : 'pending' }}">

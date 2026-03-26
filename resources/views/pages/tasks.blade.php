@@ -2,19 +2,19 @@
 @include('components.sidebar')
 
 <div class="main-container">
-        @if(session('error'))
+    @if(session('error'))
     <div class="alert alert-danger">
         <span>{{ session('error') }}</span>
         <button type="button" onclick="this.parentElement.remove()">×</button>
     </div>
-@endif
+    @endif
 
-@if(session('success'))
-<div class="alert alert-success">
-    <span>{{ session('success') }}</span>
-    <button type="button" onclick="this.parentElement.remove()">×</button>
-</div>
-@endif
+    @if(session('success'))
+    <div class="alert alert-success">
+        <span>{{ session('success') }}</span>
+        <button type="button" onclick="this.parentElement.remove()">×</button>
+    </div>
+    @endif
     <div class="page-header">
         <h1>Tasks</h1>
         <div class="page-actions">
@@ -59,12 +59,18 @@
 
                     <td>
                         <a href="{{ route('tasks.show', $task->id) }}" class="icon-button">
-        <i class="fas fa-eye"></i>
-    </a>
+                            <i class="fas fa-eye"></i>
+                        </a>
 
-    <a href="{{ route('tasks.edit', $task->id) }}" class="icon-button">
-        <i class="fas fa-edit"></i>
-    </a>
+                        <a href="{{ route('tasks.edit', $task->id) }}" class="icon-button">
+                            <i class="fas fa-edit"></i>
+                        </a>
+
+                        <a href="{{ route('tasks.delete', $task->id) }}"
+                            class="icon-button"
+                            onclick="return confirm('Are you sure you want to delete this task?');">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
                     </td>
                 </tr>
                 @endforeach
@@ -73,48 +79,48 @@
     </div>
 
     <div class="pagination-wrapper">
-    {{ $tasks->links('pagination::default') }}
-</div>
+        {{ $tasks->links('pagination::default') }}
+    </div>
 
     {{-- ADD TASK FORM --}}
     <div class="form-section" id="add-task-form">
         <h2>Assign New Task</h2>
 
         <form method="POST"
-    action="{{ isset($editTask) ? route('tasks.update', $editTask->id) : route('tasks.store') }}">
-    @csrf
+            action="{{ isset($editTask) ? route('tasks.update', $editTask->id) : route('tasks.store') }}">
+            @csrf
 
             <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
 
                 <div class="form-group">
                     <label>Task Name</label>
                     <input type="text" name="task_title"
-    value="{{ $editTask->task_title ?? '' }}" required>
+                        value="{{ $editTask->task_title ?? '' }}" required>
                 </div>
 
                 <div class="form-group">
                     <label>Assigned To</label>
                     <select name="assigned_to" required>
-    <option value="">Select Employee</option>
-    @foreach($employees as $emp)
-        <option value="{{ $emp->id }}"
-            {{ (isset($editTask) && $editTask->assigned_to == $emp->id) ? 'selected' : '' }}>
-            {{ $emp->full_name }}
-        </option>
-    @endforeach
-</select>
+                        <option value="">Select Employee</option>
+                        @foreach($employees as $emp)
+                        <option value="{{ $emp->id }}"
+                            {{ (isset($editTask) && $editTask->assigned_to == $emp->id) ? 'selected' : '' }}>
+                            {{ $emp->full_name }}
+                        </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label>Project</label>
                     <select name="project_id" required>
-    @foreach($projects as $project)
-        <option value="{{ $project->id }}"
-            {{ (isset($editTask) && $editTask->project_id == $project->id) ? 'selected' : '' }}>
-            {{ $project->project_name }}
-        </option>
-    @endforeach
-</select>
+                        @foreach($projects as $project)
+                        <option value="{{ $project->id }}"
+                            {{ (isset($editTask) && $editTask->project_id == $project->id) ? 'selected' : '' }}>
+                            {{ $project->project_name }}
+                        </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -147,14 +153,14 @@
 
             </div>
 
-           <div class="form-actions">
-    @if(isset($editTask))
-        <button type="submit" class="btn-primary">Update Task</button>
-        <a href="{{ route('tasks') }}" class="btn-secondary">Cancel</a>
-    @else
-        <button type="submit" class="btn-primary">Assign Task</button>
-    @endif
-</div>
+            <div class="form-actions">
+                @if(isset($editTask))
+                <button type="submit" class="btn-primary">Update Task</button>
+                <a href="{{ route('tasks') }}" class="btn-secondary">Cancel</a>
+                @else
+                <button type="submit" class="btn-primary">Assign Task</button>
+                @endif
+            </div>
         </form>
     </div>
 </div>

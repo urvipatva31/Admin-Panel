@@ -45,9 +45,9 @@
         </tbody>
     </table>
 
-    <div class="pagination-wrapper">
-    {{ $logs->links('pagination::default') }}
 </div>
+ <div class="pagination-wrapper">
+    {{ $logs->links('pagination::default') }}
 </div>
 
 <div class="form-section">

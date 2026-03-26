@@ -37,7 +37,7 @@ class ReportController extends Controller
             : 0;
 
         $reports = DB::table('reports')
-            ->join('members', 'members.id', '=', 'reports.generated_by')
+            ->leftJoin('members', 'members.id', '=', 'reports.generated_by')
             ->select(
                 'reports.id',
                 'reports.report_name',
@@ -63,12 +63,12 @@ class ReportController extends Controller
         return view('pages.report-view', compact('report'));
     }
 
-    public function download($id)
+   public function download($id)
 {
-    $report = Report::findOrFail($id);
+    $report = Report::with('user')->findOrFail($id);
 
-    // $pdf = Pdf::loadView('reports.pdf', compact('report'));
+    $pdf = Pdf::loadView('pages.pdf.report', compact('report'));
 
-    // return $pdf->download($report->report_name . '.pdf');
+    return $pdf->download($report->report_name . '.pdf');
 }
 }

@@ -86,20 +86,20 @@ class ProjectController extends Controller
         ]);
     }
 
-    // public function destroy($id)
-    // {
-    //     $project = Project::findOrFail($id);
-    //     $projectName = $project->project_name;
+    public function destroy($id)
+    {
+        $project = Project::findOrFail($id);
+        $projectName = $project->project_name;
 
-    //     $project->delete();
+        $project->delete();
 
-    //     AuditLog::logActivity(
-    //         session('member_id'),
-    //         'Deleted',
-    //         'Project',
-    //         'Deleted project: ' . $projectName
-    //     );
+        AuditLog::logActivity(
+            session('member_id'),
+            'Deleted',
+            'Project',
+            'Deleted project: ' . $projectName
+        );
 
-    //     return redirect()->route('projects')->with('success', 'Project Deleted');
-    // }
+        return redirect()->route('projects')->with('success', 'Project Deleted');
+    }
 }

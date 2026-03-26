@@ -64,6 +64,12 @@
                         <a href="{{ route('projects.edit', $project->id) }}" class="icon-button">
                             <i class="fas fa-edit"></i>
                         </a>
+
+                        <a href="{{ route('projects.delete', $project->id) }}"
+                            class="icon-button"
+                            onclick="return confirm('Are you sure you want to delete this project?');">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
                     </td>
                 </tr>
                 @empty

@@ -183,11 +183,18 @@ $presentPercent = $totalEmployees > 0
         <div class="form-group">
             <label>Start Date</label>
             <input type="date" name="start_date" required>
+            @error('start_date')
+    <small style="color:red;">{{ $message }}</small>
+@enderror
         </div>
 
         <div class="form-group">
             <label>End Date</label>
             <input type="date" name="end_date" required>
+            @error('end_date')
+    <small style="color:red;">{{ $message }}</small>
+@enderror
+
         </div>
 
         <div class="form-group" style="grid-column: span 2;">

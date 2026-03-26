@@ -1,7 +1,8 @@
 @include('components.header')
 @include('components.sidebar')
 
-    @if(session('error'))
+<div class="main-container">
+     @if(session('error'))
     <div class="alert alert-danger">
         <span>{{ session('error') }}</span>
         <button type="button" onclick="this.parentElement.remove()">×</button>
@@ -14,7 +15,6 @@
     <button type="button" onclick="this.parentElement.remove()">×</button>
 </div>
 @endif
-<div class="main-container">
     <div class="page-header">
         <h1>HR Management</h1>
         <div class="page-actions">

@@ -102,4 +102,65 @@
     {{ $leaves->links('pagination::default') }}
 </div>
 
+<div class="page-header" style="margin-top:40px;">
+    <h1>Leave History</h1>
+</div>
+
+<div class="table-container">
+<table class="data-table">
+<thead>
+<tr>
+<th>Employee</th>
+<th>Leave Type</th>
+<th>Start Date</th>
+<th>End Date</th>
+<th>Total Days</th>
+<th>Reason</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+@forelse($approvedLeaves as $leave)
+<tr>
+
+<td>{{ $leave->member->full_name ?? 'N/A' }}</td>
+
+<td>{{ ucfirst($leave->leave_type) }}</td>
+
+<td>{{ $leave->start_date }}</td>
+
+<td>{{ $leave->end_date }}</td>
+
+<td>
+{{ \Carbon\Carbon::parse($leave->start_date)
+->diffInDays(\Carbon\Carbon::parse($leave->end_date)) + 1 }}
+</td>
+
+<td>{{ $leave->reason }}</td>
+
+<td>
+<span class="status-badge {{ $leave->status }}">
+{{ ucfirst($leave->status) }}
+</span>
+</td>
+
+</tr>
+
+@empty
+<tr>
+<td colspan="7" style="text-align:center;">
+No leave history found
+</td>
+</tr>
+@endforelse
+
+</tbody>
+</table>
+</div>
+
+<div class="pagination-wrapper">
+{{ $approvedLeaves->links('pagination::default') }}
+</div>
 </div>

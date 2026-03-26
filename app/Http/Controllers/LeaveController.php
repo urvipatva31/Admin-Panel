@@ -19,12 +19,25 @@ class LeaveController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('pages.leave-management', compact('leaves'));
+        $approvedLeaves = Leave::with('member')
+            ->whereIn('status', ['approved', 'rejected'])
+            ->whereDate('start_date', '>=', now())
+            ->orderBy('approved_at', 'desc')
+            ->paginate(10, ['*'], 'approved_page');
+
+        return view('pages.leave-management', compact('leaves', 'approvedLeaves'));
     }
 
     // Apply Leave
     public function apply(Request $request)
     {
+        $request->validate([
+            'leave_type' => 'required',
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            // 'reason' => 'required|string|max:500'
+        ]);
+
         $leave = Leave::create([
             'member_id' => session('member_id'),
             'leave_type' => $request->leave_type,
@@ -35,11 +48,11 @@ class LeaveController extends Controller
         ]);
 
         AuditLog::logActivity(
-        session('member_id'),
-        'Applied',
-        'Leave Management',
-        'Applied for leave from ' . $leave->start_date . ' to ' . $leave->end_date
-    );
+            session('member_id'),
+            'Applied',
+            'Leave Management',
+            'Applied for leave from ' . $leave->start_date . ' to ' . $leave->end_date
+        );
 
         return back()->with('success', 'Leave request submitted');
     }
@@ -68,12 +81,12 @@ class LeaveController extends Controller
         ]);
 
         AuditLog::logActivity(
-    $approverId,
-    'Approved',
-    'Leave Management',
-    'Approved leave for ' . $leave->member->full_name .
-    ' from ' . $leave->start_date . ' to ' . $leave->end_date
-);
+            $approverId,
+            'Approved',
+            'Leave Management',
+            'Approved leave for ' . $leave->member->full_name .
+                ' from ' . $leave->start_date . ' to ' . $leave->end_date
+        );
 
         $period = CarbonPeriod::create($leave->start_date, $leave->end_date);
 
@@ -120,20 +133,20 @@ class LeaveController extends Controller
         ]);
 
         AuditLog::logActivity(
-    $approverId,
-    'Rejected',
-    'Leave Management',
-    'Rejected leave for ' . $leave->member->full_name .
-    ' from ' . $leave->start_date . ' to ' . $leave->end_date
-);
+            $approverId,
+            'Rejected',
+            'Leave Management',
+            'Rejected leave for ' . $leave->member->full_name .
+                ' from ' . $leave->start_date . ' to ' . $leave->end_date
+        );
 
         return back()->with('success', 'Leave rejected successfully.');
     }
 
-    
+
     private function canApprove($approverId, $approverRoleId, $applicantId, $applicantRoleId)
     {
-        
+
         if ($approverId == $applicantId) {
             return false;
         }
