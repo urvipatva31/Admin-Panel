@@ -26,11 +26,6 @@ class Member extends Model
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function designation()
-    {
-        return $this->belongsTo(Designation::class, 'designation_id');
-    }
-
     public function projects()
     {
         return $this->belongsToMany(
@@ -40,4 +35,9 @@ class Member extends Model
             'project_id'
         );
     }
+
+    public function permissions()
+{
+    return $this->role->permissions();
+}
 }
