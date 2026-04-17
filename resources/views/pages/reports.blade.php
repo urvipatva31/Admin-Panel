@@ -16,9 +16,7 @@
     @endif
     <div class="page-header">
         <h1>Reports</h1>
-        <div class="page-actions">
-            <button><i class="fas fa-download"></i> Generate Report</button>
-        </div>
+        
     </div>
 
     <div class="grid-container">
@@ -58,37 +56,39 @@
 
     <div class="form-section">
         <h2>Generate Custom Report</h2>
-        <form>
+        <form action="{{ route('reports.store') }}" method="POST">
+            @csrf
+
             <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
+
                 <div class="form-group">
-                    <label for="reportType">Report Type</label>
-                    <select id="reportType">
+                    <label>Report Type</label>
+                    <select name="report_type" required>
                         <option value="">Select Report Type</option>
                         <option value="project_summary">Project Summary</option>
-                        <option value="employee_activity">Employee Activity</option>
-                        <option value="financial_overview">Financial Overview</option>
                         <option value="attendance_summary">Attendance Summary</option>
+                        <option value="task_summary">Task Summary</option>
+                        <option value="financial_overview">Financial Overview</option>
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <label for="timePeriod">Time Period</label>
-                    <select id="timePeriod">
-                        <option value="this_month">This Month</option>
-                        <option value="last_month">Last Month</option>
-                        <option value="this_quarter">This Quarter</option>
-                        <option value="last_quarter">Last Quarter</option>
-                        <option value="this_year">This Year</option>
-                    </select>
+                    <label>Report Name</label>
+                    <input type="text" name="report_name" required placeholder="Enter report name">
                 </div>
+
                 <div class="form-group">
-                    <label for="startDate">Start Date (Optional)</label>
-                    <input type="date" id="startDate">
+                    <label>Start Date</label>
+                    <input type="date" name="start_date" required>
                 </div>
+
                 <div class="form-group">
-                    <label for="endDate">End Date (Optional)</label>
-                    <input type="date" id="endDate">
+                    <label>End Date</label>
+                    <input type="date" name="end_date">
                 </div>
+
             </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Generate Report</button>
                 <button type="reset" class="btn-secondary">Clear</button>
@@ -133,6 +133,12 @@
                             title="View Report">
                             <i class="fas fa-eye"></i>
                         </a>
+
+                        <a href="{{ route('reports.delete', $report->id) }}"
+                            class="icon-button"
+                            onclick="return confirm('Are you sure you want to delete this report?');">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
                     </td>
                 </tr>
                 @empty
@@ -145,7 +151,7 @@
     </div>
 
     <div class="pagination-wrapper">
-    {{ $reports->links('pagination::default') }}
-</div>
+        {{ $reports->links('pagination::default') }}
+    </div>
 
 </div>

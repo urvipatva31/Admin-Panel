@@ -10,4 +10,5 @@
 </head>
 
 @yield('main')
+
 </html>

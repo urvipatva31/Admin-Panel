@@ -65,13 +65,23 @@ class MembersController extends Controller
 
     public function logout()
     {
-        AttendanceService::markLogout(session('member_id'));
+        // 1. LOCK the ID in a variable immediately
+    // This ensures even if the session changes later, we have the number.
+    $memberId = session('member_id');
+
+    // 2. Use the variable, NOT the session helper
+    if ($memberId) {
+        // Run your attendance logic
+        AttendanceService::markLogout($memberId);
+
+        // Run your audit log logic using the variable
         AuditLog::logActivity(
-            session('member_id'),
+            $memberId,
             'Logout',
             'Authentication',
             'User logged out'
         );
+    }
         Session::flush();
         return redirect()->route('login')->with('success', 'Logged out successfully');
     }

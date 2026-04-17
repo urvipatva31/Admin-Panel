@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\MembersController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\DashboardController;
@@ -13,45 +14,37 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\PayrollController;
-
 use App\Http\Controllers\AuditLogController;
-
 use App\Http\Controllers\ProfileController;
-
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-
     if (session()->has('member_id')) {
         return redirect()->route('dashboard');
     }
-
     return redirect()->route('login');
 });
+Route::get('/login', function () {
+    if (session()->has('member_id')) {
+        return redirect()->route('dashboard');
+    }
+    return view('login');
+})->name('login');
 
 Route::view('register', 'register')->name('register');
 Route::post('register', [MembersController::class, 'register'])->name('register.post');
-
-Route::get('/login', function () {
-
-    if (session()->has('member_id')) {
-        return redirect()->route('dashboard');
-    }
-
-    return view('login');
-})->name('login');
 Route::post('login', [MembersController::class, 'login'])->name('login.post');
-
 Route::get('logout', [MembersController::class, 'logout'])->name('logout');
-
 
 Route::get('forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendLink'])->name('password.email');
-
 Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['member'])->group(function () {
+
+    Route::get('/global-search', [GlobalSearchController::class, 'search'])->name('global.search');
+    
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard.view');
 
     Route::get('user-management', [UserController::class, 'index'])->name('users')->middleware('permission:members.view');
@@ -89,8 +82,10 @@ Route::middleware(['member'])->group(function () {
     Route::post('/daily-work-report/update-status/{id}', [DailyWorkReportController::class, 'updateStatus'])->name('daily-work-report.updateStatus')->middleware('permission:dwr.approve');
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports')->middleware('permission:reports.view');
-    Route::get('reports/view/{id}', [ReportController::class, 'view'])->name('reports.view');
-    Route::get('reports/download/{id}', [ReportController::class, 'download'])->name('reports.download');
+    Route::post('reports/store', [ReportController::class, 'store'])->name('reports.store')->middleware('permission:reports.create');
+    Route::get('reports/view/{id}', [ReportController::class, 'view'])->name('reports.view')->middleware('permission:reports.view');
+    Route::get('reports/download/{id}', [ReportController::class, 'download'])->name('reports.download')->middleware('permission:reports.download');
+    Route::get('reports/delete/{id}', [ReportController::class, 'destroy'])->name('reports.delete')->middleware('permission:reports.delete');
 
     Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance')->middleware('permission:attendance.view');
 
@@ -100,9 +95,10 @@ Route::middleware(['member'])->group(function () {
     Route::post('leave/reject/{id}', [LeaveController::class, 'reject'])->middleware('permission:leaves.approve');
 
     Route::get('payroll', [PayrollController::class, 'index'])->name('payroll')->middleware('permission:payroll.view');
-    Route::post('payroll/store', [PayrollController::class, 'store'])->name('payroll.store');
+    Route::post('payroll/store', [PayrollController::class, 'store'])->name('payroll.store')->middleware('permission:payroll.create');
+    Route::get('payroll/delete/{id}', [PayrollController::class, 'destroy'])->name('payroll.delete')->middleware('permission:payroll.delete');
 
-    Route::view('system-settings', 'pages.system-settings')->name('system-settings')->middleware('permission:setting.view');
+    // Route::view('system-settings', 'pages.system-settings')->name('system-settings')->middleware('permission:setting.view');
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit')->middleware('permission:audit.view');
 
@@ -113,5 +109,5 @@ Route::middleware(['member'])->group(function () {
     Route::post('profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.changePassword');
 
-    Route::view('settings', 'pages.settings');
+    // Route::view('settings', 'pages.settings');
 });

@@ -26,7 +26,6 @@ class RolePermissionController extends Controller
             'dwr',
             'reports',
             'payroll',
-            'settings',
             'audit'
         ];
 

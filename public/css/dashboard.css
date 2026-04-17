@@ -191,7 +191,7 @@ textarea:focus {
 
 .form-actions button,
 a {
-    padding: 10px 22px;
+    padding: 10px 10px;
     border-radius: var(--radius);
     font-weight: 600;
     font-size: 0.9rem;

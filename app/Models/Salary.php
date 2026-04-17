@@ -13,7 +13,8 @@ class Salary extends Model
         'bonus',
         'deductions',
         'total_salary',
-        'status'
+        'status',
+        'notes'
     ];
 
 public function member()

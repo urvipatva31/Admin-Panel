@@ -11,7 +11,7 @@ $userId = session('member_id');
 $myAttendance = $attendance->where('member_id', $userId)->first();
 
 // Dashboard calculations
-$presentCount = $attendance->whereIn('status', ['present','late'])->count();
+$presentCount = $attendance->whereIn('status', ['present', 'late', 'ontime', 'wfh'])->count();
 $lateCount = $attendance->where('status','late')->count();
 $leaveCount = $attendance->where('status','leave')->count();
 
@@ -39,13 +39,9 @@ $presentPercent = $totalEmployees > 0
     <div class="page-header">
         <h1>Attendance</h1>
 
-
         <div class="page-actions">
 
-
-
         </div>
-
 
     </div>
 
@@ -119,28 +115,30 @@ $presentPercent = $totalEmployees > 0
                     <td>{{ $row->lunch_out ?? '--' }}</td>
                     <td>{{ $row->post_lunch_in ?? '--' }}</td>
                     <td>{{ $row->check_out ?? '--' }}</td>
+<td>
+    @php
+        // Determine the CSS class based on status
+        $statusClass = 'active'; // Default for On Time/WFH
+        if (in_array($row->status, ['late', 'rejected', 'absent'])) {
+            $statusClass = 'rejected';
+        }
+    @endphp
 
-                    <td>
-                        <span class="status-badge 
-        @if($row->status == 'late') rejected
-        @elseif($row->status == 'present') active
-        @else rejected
+    <span class="status-badge {{ $statusClass }}">
+        @if($row->status == 'ontime')
+            On Time
+        @else
+            {{ ucfirst(str_replace('_', ' ', $row->status)) }}
         @endif
-    ">
-                            @if($row->status == 'present')
-                            On Time
-                            @elseif($row->status == 'late')
-                            Late
-                            @else
-                            {{ ucfirst($row->status) }}
-                            @endif
-                        </span>
-                    </td>
-
+    </span>
+</td>
                     <td>
-                        @if($row->total_work_minutes)
-                        {{ floor($row->total_work_minutes / 60) }}h
-                        {{ $row->total_work_minutes % 60 }}m
+                        @if($row->total_work_minutes > 0)
+                        @php
+                        $h = floor($row->total_work_minutes / 60);
+                        $m = $row->total_work_minutes % 60;
+                        @endphp
+                        {{ $h }}h {{ $m }}m
                         @else
                         --
                         @endif

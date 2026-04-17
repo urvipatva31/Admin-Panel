@@ -1,15 +1,21 @@
 @php
-    use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
+$member = null;
+$notifications = [];
 
-    $member = null;
+if(session()->has('member_id')) {
+$member = DB::table('members')
+->leftJoin('roles', 'members.role_id', '=', 'roles.id')
+->select('members.*', 'roles.role_name')
+->where('members.id', session('member_id'))
+->first();
 
-    if(session()->has('member_id')) {
-        $member = DB::table('members')
-            ->leftJoin('roles', 'members.role_id', '=', 'roles.id')
-            ->select('members.*', 'roles.role_name')
-            ->where('members.id', session('member_id'))
-            ->first();
-    }
+// GET LATEST 3 NOTIFICATIONS
+$notifications = DB::table('audit_logs')
+->orderBy('created_at', 'desc')
+->limit(3)
+->get();
+}
 @endphp
 
 <head>
@@ -32,10 +38,14 @@
             <img src="{{ asset('img/ES_Logo.png') }}" alt="Logo">
         </div>
 
-        <div class="search-bar">
-            <i class="ti ti-search"></i>
-            <input type="text" placeholder="Search dashboard...">
-        </div>
+        <div class="search-bar" style="position: relative;">
+    <i class="ti ti-search"></i>
+    <input type="text" id="global-search-input" placeholder="Search members or months..." autocomplete="off">
+
+    <div id="search-results" class="global-search-results" 
+         style="display:none; width: 100%; top: 45px; position: absolute; z-index: 99999; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-lg); max-height: 400px; overflow-y: auto;">
+    </div>
+</div>
     </div>
 
     <div class="topbar-right">
@@ -43,10 +53,42 @@
             <i class="ti ti-moon"></i>
         </button>
 
-        <button class="icon-btn">
-            <i class="ti ti-bell"></i>
-            <span class="badge">3</span>
-        </button>
+        <div class="user-dropdown" style="margin-right: 15px;">
+            <button class="icon-btn" id="notif-toggle">
+                <i class="ti ti-bell"></i>
+                <span class="badge">{{ count($notifications) }}</span>
+            </button>
+            <div class="dropdown-menu" id="notif-menu" style="width: 280px; padding: 0;">
+                <div style="padding: 12px; font-weight: bold; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Recent Activity</span>
+                    <span style="font-size: 10px; color: var(--primary-color);">Latest 3</span>
+                </div>
+                @foreach($notifications as $note)
+                <div class="dropdown-item" style="white-space: normal; padding: 12px; border-bottom: 1px solid #f5f5f5; line-height: 1.4;">
+                    {{-- Display Action/Type --}}
+                    <div style="font-weight: 600; font-size: 13px;">
+                        {{ $note->action ?? ($note->type ?? 'Activity') }}
+                    </div>
+
+                    {{-- Display Details Safely --}}
+                    <div style="font-size: 12px; color: #666;">
+                        @php
+                        // This checks multiple possible column names (details, activity, description)
+                        $detailText = $note->details ?? ($note->activity ?? ($note->description ?? 'No details available'));
+                        @endphp
+                        {{ Str::limit($detailText, 60) }}
+                    </div>
+
+                    <div style="font-size: 10px; color: #999; margin-top: 4px;">
+                        {{ \Carbon\Carbon::parse($note->created_at)->diffForHumans() }}
+                    </div>
+                </div>
+                @endforeach
+                @if(count($notifications) == 0)
+                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
+                @endif
+            </div>
+        </div>
 
         <div class="user-dropdown">
             <button class="user-menu-btn">
@@ -63,9 +105,9 @@
                     <i class="ti ti-user"></i> My Profile
                 </a>
 
-                <a href="{{ url('settings') }}" class="dropdown-item">
+                <!-- <a href="{{ url('settings') }}" class="dropdown-item">
                     <i class="ti ti-settings"></i> Settings
-                </a>
+                </a> -->
 
                 <div class="dropdown-divider"></div>
 

@@ -7,14 +7,14 @@
         <span>{{ session('error') }}</span>
         <button type="button" onclick="this.parentElement.remove()">×</button>
     </div>
-@endif
+    @endif
 
-@if(session('success'))
-<div class="alert alert-success">
-    <span>{{ session('success') }}</span>
-    <button type="button" onclick="this.parentElement.remove()">×</button>
-</div>
-@endif
+    @if(session('success'))
+    <div class="alert alert-success">
+        <span>{{ session('success') }}</span>
+        <button type="button" onclick="this.parentElement.remove()">×</button>
+    </div>
+    @endif
     <div class="page-header">
         <h1>User Management</h1>
         <div class="page-actions">
@@ -68,8 +68,8 @@
     </div>
 
     <div class="pagination-wrapper">
-    {{ $users->links('pagination::default') }}
-</div>
+        {{ $users->links('pagination::default') }}
+    </div>
 
     @if ($errors->any())
     <div class="alert-error">
@@ -123,6 +123,14 @@
                         <option value="inactive" {{ (isset($editUser) && $editUser->status=='inactive')?'selected':'' }}>Inactive</option>
                     </select>
 
+                </div>
+
+                <div class="form-group">
+                    <label>Base Salary</label>
+                    <input type="number"
+                        name="base_salary"
+                        value="{{ old('base_salary', $editUser->base_salary ?? '') }}"
+                        step="0.01">
                 </div>
             </div>
 

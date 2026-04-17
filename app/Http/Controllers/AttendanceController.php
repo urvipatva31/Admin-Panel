@@ -28,21 +28,4 @@ class AttendanceController extends Controller
     return view('pages.attendance', compact('attendance','totalEmployees','absentCount'));
 }
 
-    // public static function markLoginAttendance($memberId)
-    // {
-    //     $today = Carbon::today()->toDateString();
-
-    //     $exists = Attendance::where('member_id', $memberId)
-    //         ->where('attendance_date', $today)
-    //         ->exists();
-
-    //     if (!$exists) {
-    //         Attendance::create([
-    //             'member_id' => $memberId,
-    //             'attendance_date' => $today,
-    //             'status' => 'present',
-    //             'approval_status' => 'approved'
-    //         ]);
-    //     }
-    // }
 }

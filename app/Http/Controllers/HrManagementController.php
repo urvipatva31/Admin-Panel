@@ -26,6 +26,7 @@ class HrManagementController extends Controller
             'full_name' => 'required|string|max:255',
             'email'     => 'required|email|unique:members,email',
             'status'    => 'required',
+            'base_salary' => 'nullable|numeric|min:0',
         ]);
 
         $employeeRole = Role::where('role_name', 'employee')->first();
@@ -35,6 +36,7 @@ class HrManagementController extends Controller
             'email'     => $request->email,
             'role_id'   => $employeeRole->id,
             'status'    => $request->status,
+            'base_salary' => $request->base_salary,
             'password'  => bcrypt('employee@123'), 
         ]);
 
@@ -70,12 +72,14 @@ class HrManagementController extends Controller
             'full_name' => 'required|string|max:255',
             'email'     => 'required|email|unique:members,email,' . $employee->id,
             'status'    => 'required',
+            'base_salary' => 'nullable|numeric|min:0',
         ]);
 
         $employee->update([
             'full_name' => $request->full_name,
             'email'     => $request->email,
             'status'    => $request->status,
+            'base_salary' => $request->base_salary,
         ]);
 
         AuditLog::logActivity(

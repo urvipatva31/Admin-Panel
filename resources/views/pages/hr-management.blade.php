@@ -2,19 +2,19 @@
 @include('components.sidebar')
 
 <div class="main-container">
-     @if(session('error'))
+    @if(session('error'))
     <div class="alert alert-danger">
         <span>{{ session('error') }}</span>
         <button type="button" onclick="this.parentElement.remove()">×</button>
     </div>
-@endif
+    @endif
 
-@if(session('success'))
-<div class="alert alert-success">
-    <span>{{ session('success') }}</span>
-    <button type="button" onclick="this.parentElement.remove()">×</button>
-</div>
-@endif
+    @if(session('success'))
+    <div class="alert alert-success">
+        <span>{{ session('success') }}</span>
+        <button type="button" onclick="this.parentElement.remove()">×</button>
+    </div>
+    @endif
     <div class="page-header">
         <h1>HR Management</h1>
         <div class="page-actions">
@@ -56,8 +56,8 @@
                         </a>
 
                         <a href="{{ route('hr-management.delete', $emp->id) }}"
-                           class="icon-button"
-                           onclick="return confirm('Are you sure you want to delete this employee?');">
+                            class="icon-button"
+                            onclick="return confirm('Are you sure you want to delete this employee?');">
                             <i class="fas fa-trash-alt"></i>
                         </a>
                     </td>
@@ -68,8 +68,8 @@
     </div>
 
     <div class="pagination-wrapper">
-    {{ $employees->links('pagination::default') }}
-</div>
+        {{ $employees->links('pagination::default') }}
+    </div>
 
     <!-- {{-- ERROR MESSAGE --}}
     @if ($errors->any())
@@ -93,7 +93,7 @@
 
             @csrf
             @if(isset($editEmployee))
-                @method('PUT')
+            @method('PUT')
             @endif
 
             <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
@@ -122,14 +122,24 @@
                         </option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label>Monthly Base Salary</label>
+                    <input type="number"
+                        name="base_salary"
+                        value="{{ old('base_salary', $editEmployee->base_salary ?? '') }}"
+                        step="0.01"
+                        placeholder="e.g. 25000">
+                </div>
+
             </div>
 
             <div class="form-actions">
                 @if(isset($editEmployee))
-                    <button type="submit" class="btn-primary">Update Employee</button>
-                    <a href="{{ route('hr-management') }}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">Update Employee</button>
+                <a href="{{ route('hr-management') }}" class="btn-secondary">Cancel</a>
                 @else
-                    <button type="submit" class="btn-primary">Create Employee</button>
+                <button type="submit" class="btn-primary">Create Employee</button>
                 @endif
             </div>
 

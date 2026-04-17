@@ -109,14 +109,14 @@
             </li>
             @endif
 
-            @if(hasPermission('settings.view'))
+            <!-- {{-- @if(hasPermission('settings.view'))
             <li class="nav-item {{ request()->routeIs('system-settings') ? 'active' : '' }}">
                 <a href="{{ route('system-settings') }}" class="nav-link">
                     <i class="ti ti-settings"></i>
                     <span class="nav-text">System Settings</span>
                 </a>
             </li>
-            @endif
+            @endif --}} -->
 
             @if(hasPermission('audit.view'))
             <li class="nav-item {{ request()->routeIs('audit') ? 'active' : '' }}">

@@ -4,9 +4,7 @@
     
 <div class="page-header">
     <h1>Audit Logs</h1>
-    <div class="page-actions">
-        <button><i class="fas fa-download"></i> Export Logs</button>
-    </div>
+    
 </div>
 
 <div class="table-container">

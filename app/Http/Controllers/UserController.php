@@ -24,6 +24,7 @@ class UserController extends Controller
             'email'     => 'required|email|unique:members,email',
             'status' => 'required|in:active,pending,inactive',
             'role_id'   => 'required',
+            'base_salary' => 'nullable|numeric|min:0',
         ]);
 
        $user = Member::create([
@@ -32,6 +33,8 @@ class UserController extends Controller
             'password'  => Hash::make('employee@123'),
             'role_id'   => $request->role_id,
             'status'    => $request->status,
+            'base_salary' => $request->base_salary,
+            
         ]);
 
         AuditLog::logActivity(
@@ -39,6 +42,7 @@ class UserController extends Controller
         'Create',
         'User Management',
         'Created user: ' . $user->full_name
+        
     );
 
         return redirect()->route('users')->with('success', 'User created. Default password is: employee@123');
@@ -60,7 +64,8 @@ class UserController extends Controller
             'full_name' => 'required',
             'email' => 'required|email',
             'role_id' => 'required',
-            'status' => 'required'
+            'status' => 'required',
+            'base_salary' => 'nullable|numeric|min:0',
         ]);
 
         $user = Member::findOrFail($id);
@@ -69,6 +74,7 @@ class UserController extends Controller
             'email' => $request->email,
             'role_id' => $request->role_id,
             'status' => $request->status,
+            'base_salary' => $request->base_salary,
         ]);
         AuditLog::logActivity(
         session('member_id'),
@@ -103,4 +109,5 @@ class UserController extends Controller
         return redirect()->route('users')
             ->with('success', 'User deleted successfully');
     }
+
 }
