@@ -1,20 +1,26 @@
 @php
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str; // Added for the Str::limit helper
+
 $member = null;
 $notifications = [];
 
 if(session()->has('member_id')) {
-$member = DB::table('members')
-->leftJoin('roles', 'members.role_id', '=', 'roles.id')
-->select('members.*', 'roles.role_name')
-->where('members.id', session('member_id'))
-->first();
+    $userId = session('member_id');
+    
+    $member = DB::table('members')
+        ->leftJoin('roles', 'members.role_id', '=', 'roles.id')
+        ->select('members.*', 'roles.role_name')
+        ->where('members.id', $userId)
+        ->first();
 
-// GET LATEST 3 NOTIFICATIONS
-$notifications = DB::table('audit_logs')
-->orderBy('created_at', 'desc')
-->limit(3)
-->get();
+    // GET PERSONALIZED NOTIFICATIONS
+    // We filter by member_id to show only things that concern THIS user
+    $notifications = DB::table('audit_logs')
+        ->where('member_id', $userId) // <--- CRITICAL FILTER
+        ->orderBy('created_at', 'desc')
+        ->limit(5) // Increased to 5 for a better UX
+        ->get();
 }
 @endphp
 
@@ -54,41 +60,53 @@ $notifications = DB::table('audit_logs')
         </button>
 
         <div class="user-dropdown" style="margin-right: 15px;">
-            <button class="icon-btn" id="notif-toggle">
-                <i class="ti ti-bell"></i>
-                <span class="badge">{{ count($notifications) }}</span>
-            </button>
-            <div class="dropdown-menu" id="notif-menu" style="width: 280px; padding: 0;">
-                <div style="padding: 12px; font-weight: bold; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Recent Activity</span>
-                    <span style="font-size: 10px; color: var(--primary-color);">Latest 3</span>
-                </div>
-                @foreach($notifications as $note)
-                <div class="dropdown-item" style="white-space: normal; padding: 12px; border-bottom: 1px solid #f5f5f5; line-height: 1.4;">
-                    {{-- Display Action/Type --}}
-                    <div style="font-weight: 600; font-size: 13px;">
-                        {{ $note->action ?? ($note->type ?? 'Activity') }}
-                    </div>
-
-                    {{-- Display Details Safely --}}
-                    <div style="font-size: 12px; color: #666;">
-                        @php
-                        // This checks multiple possible column names (details, activity, description)
-                        $detailText = $note->details ?? ($note->activity ?? ($note->description ?? 'No details available'));
-                        @endphp
-                        {{ Str::limit($detailText, 60) }}
-                    </div>
-
-                    <div style="font-size: 10px; color: #999; margin-top: 4px;">
-                        {{ \Carbon\Carbon::parse($note->created_at)->diffForHumans() }}
-                    </div>
-                </div>
-                @endforeach
-                @if(count($notifications) == 0)
-                <div style="padding: 20px; text-align: center; color: #999;">No new notifications</div>
-                @endif
-            </div>
+    <button class="icon-btn" id="notif-toggle">
+        <i class="ti ti-bell"></i>
+        @if(count($notifications) > 0)
+            <span class="badge" style="background: #ff4d4d; color: white;">{{ count($notifications) }}</span>
+        @endif
+    </button>
+    
+    <div class="dropdown-menu" id="notif-menu" style="width: 300px; padding: 0; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <div style="padding: 15px; font-weight: bold; border-bottom: 1px solid var(--border); background: var(--primary-color); color: white; border-radius: 10px 10px 0 0;">
+            Notifications
         </div>
+
+        <div style="max-height: 300px; overflow-y: auto;">
+            @forelse($notifications as $note)
+                <div class="dropdown-item" style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #f5f5f5; white-space: normal;">
+                    {{-- Dynamic Icon based on Action --}}
+                    <div style="flex-shrink: 0;">
+                        @if(Str::contains(strtolower($note->action), 'leave'))
+                            <i class="ti ti-calendar-check" style="color: #28a745; font-size: 20px;"></i>
+                        @elseif(Str::contains(strtolower($note->action), 'task'))
+                            <i class="ti ti-clipboard-list" style="color: #007bff; font-size: 20px;"></i>
+                        @else
+                            <i class="ti ti-info-circle" style="color: #6c757d; font-size: 20px;"></i>
+                        @endif
+                    </div>
+
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px; color: var(--text);">
+                            {{ $note->action }}
+                        </div>
+                        <div style="font-size: 12px; color: #666; line-height: 1.3;">
+                            {{ Str::limit($note->details ?? $note->activity ?? $note->description, 60) }}
+                        </div>
+                        <div style="font-size: 10px; color: #999; margin-top: 5px;">
+                            <i class="ti ti-clock"></i> {{ \Carbon\Carbon::parse($note->created_at)->diffForHumans() }}
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div style="padding: 30px; text-align: center; color: #999;">
+                    <i class="ti ti-bell-off" style="font-size: 30px; display: block; margin-bottom: 10px;"></i>
+                    No personal notifications
+                </div>
+            @endforelse
+        </div>
+    </div>
+</div>
 
         <div class="user-dropdown">
             <button class="user-menu-btn">
@@ -119,5 +137,6 @@ $notifications = DB::table('audit_logs')
         </div>
     </div>
 </header>
+
 
 <script src="{{ asset('js/main.js') }}" defer></script>

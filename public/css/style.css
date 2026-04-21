@@ -923,7 +923,7 @@ input:focus, select:focus {
 
 .dropdown-menu {
     position: absolute;
-    top: 100%;
+    top: 10%;
     right: 0;
     background: var(--card-bg);
     border-radius: var(--radius);
@@ -934,7 +934,7 @@ input:focus, select:focus {
     visibility: hidden;
     transform: translateY(-10px);
     transition: var(--transition);
-    z-index: 1000;
+    z-index: 9999;
 }
 
 .dark-mode .dropdown-menu {

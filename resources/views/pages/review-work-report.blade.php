@@ -72,7 +72,7 @@
 <div class="form-group">
     <!-- <label>Attachment</label> -->
     <div class="page-actions">
-        <a href="{{ asset('reports/'.$report->attachment) }}" class="btn-secondary" target="_blank">
+        <a href="{{ asset('work-reports/'.$report->attachment) }}" class="btn-secondary" target="_blank">
             View Atteched File
         </a>
     </div>

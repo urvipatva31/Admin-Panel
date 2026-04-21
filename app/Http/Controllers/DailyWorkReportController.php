@@ -13,9 +13,11 @@ class DailyWorkReportController extends Controller
     // Show all reports
     public function index()
     {
-        $reports = DailyWorkReport::with(['member', 'project', 'task', 'reviewer'])
+        $reports = DailyWorkReport::with(['member', 'project', 'task', 'reviewer', 'remarks'])
+            ->where('report_date', '>=', now()->subDays(3)) // last 3 days
             ->orderBy('report_date', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc') // newest first
+            ->paginate(10);
 
         $projects = Project::all();
 
@@ -76,19 +78,29 @@ class DailyWorkReportController extends Controller
     {
         $report = DailyWorkReport::with('member')->findOrFail($id);
 
-        $currentUserId = session('member_id');
-        $currentUserPriority = session('priority');
+        $currentUser = \App\Models\Member::find(session('member_id'));
+        $currentUserId = $currentUser->id;
 
-        $reportOwnerPriority = $report->member->priority;
+        $currentUserRoleId = $currentUser->role_id;
+        $reportOwnerRoleId = $report->member->role_id;
 
-        // ❌ Prevent reviewing own report
-        if ($report->member_id == $currentUserId) {
-            return redirect()->back()->with('error', 'You cannot review your own report.');
+
+       
+        if ($currentUserId == $report->member_id) {
+            return back()->with('error', 'You cannot review your own report.');
         }
 
-        // ❌ Only higher priority users can review
-        if ($currentUserPriority <= $reportOwnerPriority) {
-            return redirect()->back()->with('error', 'You do not have permission to review this report.');
+        if ($currentUserRoleId == 1 && $reportOwnerRoleId == 1) {
+            // allowed
+        }
+
+        elseif ($currentUserRoleId == $reportOwnerRoleId) {
+            return back()->with('error', 'Same role cannot review this report.');
+        }
+
+        
+        elseif ($currentUserRoleId > $reportOwnerRoleId) {
+            return back()->with('error', 'You do not have permission to review this report.');
         }
 
         // Update report

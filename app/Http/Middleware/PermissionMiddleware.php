@@ -20,7 +20,7 @@ class PermissionMiddleware
     // }
 
     if (!hasPermission($permission)) {
-        abort(403, 'Unauthorized');
+        return redirect()->back()->with('error', 'Access Denied: You do not have the required permission.');
     }
 
     return $next($request);

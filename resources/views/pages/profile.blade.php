@@ -102,7 +102,41 @@
 
     </div>
 
+<div class="form-section">
+    <div class="section-header">
+        <h2>Employee Overview</h2>
+    </div>
 
+    <div class="grid-container" style="grid-template-columns: 1fr 1fr; gap:20px;">
+
+        <!-- LEAVE CARD -->
+        <div class="card" style="padding:20px;">
+            <h3 style="margin-bottom:10px;">Leaves</h3>
+
+            <p style="font-size:28px; font-weight:bold; margin:0;">
+                {{ $leaveStats->total ?? 0 }}
+            </p>
+
+            <p style="margin-top:5px; color:gray; font-size:14px;">
+                {{ $leaveStats->paid ?? 0 }} Paid • {{ $leaveStats->unpaid ?? 0 }} Unpaid
+            </p>
+        </div>
+
+        <!-- SALARY CARD -->
+        <div class="card" style="padding:20px;">
+            <h3 style="margin-bottom:10px;">Salary</h3>
+
+            <p style="font-size:28px; font-weight:bold; margin:0;">
+                ₹ {{ $salary->total_salary ?? 0 }}
+            </p>
+
+            <p style="margin-top:5px; color:gray; font-size:14px;">
+                {{ isset($salary->created_at) ? \Carbon\Carbon::parse($salary->created_at)->format('M Y') : 'No data' }}
+            </p>
+        </div>
+
+    </div>
+</div>
     <!-- SECURITY SECTION -->
     <div class="form-section">
 

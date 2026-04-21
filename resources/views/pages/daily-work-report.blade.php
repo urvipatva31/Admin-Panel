@@ -78,9 +78,9 @@
                         </span>
                     </td>
 
-                    <td>{{ $report->remarks ?? '-' }}</td>
+                    <td>{{ $report->remarks->last()->remark  ?? '-' }}</td>
 
-                    <td>{{ $report->reviewed_by ?? '-' }}</td>
+                    <td>{{ $report->reviewer->full_name ?? '-' }}</td>
 
                     <td>
 
@@ -101,11 +101,11 @@
                 @endforelse
 
             </tbody>
-
         </table>
-
     </div>
-
+ <div class="pagination-wrapper">
+        {{ $reports->links('pagination::default') }}
+    </div>
 
 
     <div class="form-section" id="add-report-form">

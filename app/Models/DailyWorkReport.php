@@ -47,4 +47,9 @@ class DailyWorkReport extends Model
         return $this->belongsTo(Member::class, 'reviewed_by');
     }
 
+    public function remarks()
+{
+    return $this->hasMany(DailyWorkReportRemark::class, 'report_id');
+}
+
 }

@@ -16,6 +16,11 @@ class AttendanceController extends Controller
         ->where('attendance_date', $today)
         ->paginate(5);
 
+    $approvedLeaveCount = \App\Models\Leave::where('status', 'Approved')
+        ->whereDate('start_date', '<=', $today)
+        ->whereDate('end_date', '>=', $today)
+        ->count();
+
     $totalEmployees = Member::count();
 
     // Get IDs of people who marked attendance today
@@ -25,7 +30,7 @@ class AttendanceController extends Controller
     // Absentees = those NOT in attendance
     $absentCount = Member::whereNotIn('id', $presentIds)->count();
 
-    return view('pages.attendance', compact('attendance','totalEmployees','absentCount'));
+    return view('pages.attendance', compact('attendance','totalEmployees','absentCount', 'approvedLeaveCount'));
 }
 
 }

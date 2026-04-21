@@ -13,7 +13,7 @@ $myAttendance = $attendance->where('member_id', $userId)->first();
 // Dashboard calculations
 $presentCount = $attendance->whereIn('status', ['present', 'late', 'ontime', 'wfh'])->count();
 $lateCount = $attendance->where('status','late')->count();
-$leaveCount = $attendance->where('status','leave')->count();
+$leaveCount = $approvedLeaveCount;
 
 $presentPercent = $totalEmployees > 0
 ? round(($presentCount / $totalEmployees) * 100)
@@ -108,6 +108,9 @@ $presentPercent = $totalEmployees > 0
             </thead>
             <tbody>
                 @foreach($attendance as $row)
+                @if($row->status == 'leave')
+            @continue
+        @endif
                 <tr>
                     <td>{{ $row->member->full_name ?? 'N/A' }}</td>
 

@@ -44,10 +44,15 @@ class PayrollController extends Controller
             $user->suggested_deduction = 0;
         }
 
-        $user->leave_days = \App\Models\Leave::where('member_id', $user->id)
-            ->whereMonth('start_date', $month)
-            ->where('status', 'approved')
-            ->count();
+        $leaves = \App\Models\Leave::where('member_id', $user->id)
+    ->where('status', 'approved')
+    ->whereMonth('start_date', $month)
+    ->get();
+
+$user->leave_days = $leaves->sum(function ($leave) {
+    return \Carbon\Carbon::parse($leave->start_date)
+        ->diffInDays(\Carbon\Carbon::parse($leave->end_date)) + 1;
+});
     }
     return view('pages.payroll', compact('salaries', 'totalPayout', 'paidPercent', 'pendingCount', 'users'));
 }
@@ -72,43 +77,65 @@ class PayrollController extends Controller
                     ->get();
 
     // 1. Calculate Paid Leaves
-    $leaves = \App\Models\Leave::where('member_id', $member->id)
-                    ->where('status', 'approved')
-                    ->whereIn('leave_type', ['sick', 'annual', 'wfh'])
-                    ->where(function($query) use ($month, $year) {
-                        $query->whereMonth('start_date', $month)->whereYear('start_date', $year)
-                           ->orWhereMonth('end_date', $month)->whereYear('end_date', $year);
-                    })->get();
+   $leaves = \App\Models\Leave::where('member_id', $member->id)
+    ->where('status', 'approved')
+    ->where('is_paid', 1) // ✅ ONLY PAID LEAVES
+    ->where(function ($query) use ($month, $year) {
+    $query->whereBetween('start_date', ["$year-$month-01", "$year-$month-31"])
+          ->orWhereBetween('end_date', ["$year-$month-01", "$year-$month-31"])
+          ->orWhere(function ($q) use ($month, $year) {
+              $q->where('start_date', '<', "$year-$month-01")
+                ->where('end_date', '>', "$year-$month-31");
+          });
+})->get();
 
-    $totalPaidLeaveDays = 0;
-    foreach($leaves as $leave) {
-        $start = \Carbon\Carbon::parse($leave->start_date);
-        $end = \Carbon\Carbon::parse($leave->end_date);
-        $totalPaidLeaveDays += $start->diffInDays($end) + 1;
+$totalPaidLeaveDays = 0;
+
+foreach ($leaves as $leave) {
+    $start = \Carbon\Carbon::parse($leave->start_date);
+    $end   = \Carbon\Carbon::parse($leave->end_date);
+
+    $leaveDays = 0;
+
+    for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+        if ($date->month == $month && $date->year == $year) {
+            $leaveDays++;
+        }
     }
 
+    $totalPaidLeaveDays += $leaveDays;
+}
+
     // 2. Calculate Work Totals
-    $dailyRate = $baseSalary / 26; 
-    $minuteRate = $dailyRate / 480;
+    // Daily & Minute Rates
+$dailyRate = $baseSalary / 26;
+$minuteRate = $dailyRate / 480;
 
-    // We count ANY day they showed up
-    $fullWorkDays = $attendances->whereIn('status', ['ontime', 'late', 'wfh', 'present'])->count();
-    $halfDays = $attendances->where('status', 'half_day')->count();
-    
-    // 3. The Money Calculation
-    $payableDays = $fullWorkDays + $totalPaidLeaveDays + ($halfDays * 0.5);
-    $earnedBeforeDeductions = $payableDays * $dailyRate;
+// Work counts
+$fullWorkDays = $attendances->whereIn('status', ['ontime', 'late', 'wfh', 'present'])->count();
+$halfDays = $attendances->where('status', 'half_day')->count();
 
-    // 4. Minute-Perfect Lateness Deduction
-    $totalActualMinutes = $attendances->sum('total_work_minutes');
-    $expectedMinutes = ($fullWorkDays * 480) + ($halfDays * 240);
-    $shortfallMinutes = max(0, $expectedMinutes - $totalActualMinutes);
-    $latenessDeduction = $shortfallMinutes * $minuteRate;
+// Payable days
+$payableDays = $fullWorkDays + $totalPaidLeaveDays + ($halfDays * 0.5);
 
-    // 5. Final Net Salary
-    $bonus = $request->bonus ?? 0;
-    $manualDeductions = $request->deductions ?? 0;
-    $finalTotal = ($earnedBeforeDeductions + $bonus) - ($manualDeductions + $latenessDeduction);
+// Earnings
+$earnedBeforeDeductions = $payableDays * $dailyRate;
+
+// Time calculation
+$totalActualMinutes = $attendances->sum('total_work_minutes');
+$expectedMinutes = ($fullWorkDays * 480) + ($halfDays * 240);
+$shortfallMinutes = max(0, $expectedMinutes - $totalActualMinutes);
+
+// Deduction
+$latenessDeduction = $shortfallMinutes * $minuteRate;
+
+// Final salary
+$bonus = $request->bonus ?? 0;
+$manualDeductions = $request->deductions ?? 0;
+
+$totalDeductions = $manualDeductions + $latenessDeduction;
+
+$finalTotal = ($earnedBeforeDeductions + $bonus) - $totalDeductions;
 
     Salary::create([
         'member_id' => $member->id,
@@ -121,7 +148,7 @@ class PayrollController extends Controller
         'notes' => $request->notes . " (Late minutes: $shortfallMinutes)"
     ]);
 
-    return redirect()->back()->with('success', "Payroll processed. Payable Days: $payableDays, Shortfall Mins: $shortfallMinutes");
+    return redirect()->back()->with('success', "Payroll processed. Payable Days: $payableDays");
 }
 
 public function destroy($id)

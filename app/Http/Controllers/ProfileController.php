@@ -20,7 +20,42 @@ class ProfileController extends Controller
             ->where('members.id', $memberId)
             ->first();
 
-        return view('pages.profile', compact('member'));
+$leaves = DB::table('leaves')
+    ->where('member_id', $memberId)
+    ->where('status', 'approved')
+    ->get();
+
+$totalDays = 0;
+$paidDays = 0;
+$unpaidDays = 0;
+
+foreach ($leaves as $leave) {
+
+    $days = \Carbon\Carbon::parse($leave->start_date)
+        ->diffInDays(\Carbon\Carbon::parse($leave->end_date)) + 1;
+
+    $totalDays += $days;
+
+    if ($leave->is_paid == 1) {
+        $paidDays += $days;
+    } else {
+        $unpaidDays += $days;
+    }
+}
+
+$leaveStats = (object)[
+    'total' => $totalDays,
+    'paid' => $paidDays,
+    'unpaid' => $unpaidDays,
+];
+
+    // ✅ Salary
+    $salary = DB::table('salaries')
+        ->where('member_id', $memberId)
+        ->latest()
+        ->first();
+
+    return view('pages.profile', compact('member', 'leaveStats', 'salary'));
     }
 
   public function uploadPhoto(Request $request)

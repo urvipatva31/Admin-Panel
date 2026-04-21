@@ -110,10 +110,12 @@
 
 /* ===== TABLE CONTAINER ===== */
 .table-container {
+    position: relative;
     background: var(--card-bg);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow-x: auto;
+    overflow-y: visible;
     margin-bottom: 24px;
     scrollbar-width: none;
 }
@@ -126,7 +128,7 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+     overflow: visible;
 }
 
 .data-table thead {
@@ -154,6 +156,11 @@
 
 .data-table tbody tr:hover {
     background: var(--input-bg);
+}
+
+.data-table td:last-child {
+    white-space: nowrap;
+    overflow: visible;
 }
 
 /* ===== CHECKBOX FIX ===== */

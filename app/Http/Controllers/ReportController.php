@@ -73,24 +73,24 @@ class ReportController extends Controller
 
         try {
 
-            // 🔥 FETCH DATA
             if ($reportType == 'project_summary') {
+                // Filter by the project's 'start_date' column instead of 'created_at'
                 $data['projects'] = DB::table('projects')
-                    ->whereBetween('created_at', [$request->start_date, $request->end_date])
+                    ->whereBetween('start_date', [$request->start_date, $request->end_date])
                     ->get();
 
                 $data['total_projects'] = DB::table('projects')
-                    ->whereBetween('created_at', [$request->start_date, $request->end_date])
+                    ->whereBetween('start_date', [$request->start_date, $request->end_date])
                     ->count();
 
                 $data['completed_projects'] = DB::table('projects')
                     ->where('status', 'completed')
-                    ->whereBetween('created_at', [$request->start_date, $request->end_date])
+                    ->whereBetween('start_date', [$request->start_date, $request->end_date])
                     ->count();
 
                 $data['in_progress_projects'] = DB::table('projects')
-                    ->where('status', 'in_progress')
-                    ->whereBetween('created_at', [$request->start_date, $request->end_date])
+                    ->where('status', 'Active') // Match the status string 'Active' from your screenshot
+                    ->whereBetween('start_date', [$request->start_date, $request->end_date])
                     ->count();
             }
 
@@ -233,28 +233,28 @@ class ReportController extends Controller
     }
 
     public function destroy($id)
-{
-    $report = Report::findOrFail($id);
+    {
+        $report = Report::findOrFail($id);
 
-    $reportName = $report->report_name;
+        $reportName = $report->report_name;
 
-    // 🔥 DELETE FILE FROM STORAGE
-    if ($report->file_path && Storage::exists('public/' . $report->file_path)) {
-        Storage::delete('public/' . $report->file_path);
+        // 🔥 DELETE FILE FROM STORAGE
+        if ($report->file_path && Storage::exists('public/' . $report->file_path)) {
+            Storage::delete('public/' . $report->file_path);
+        }
+
+        // 🔥 DELETE REPORT
+        $report->delete();
+
+        // ✅ AUDIT LOG (SAME STYLE AS USER)
+        AuditLog::logActivity(
+            session('member_id'),
+            'Delete',
+            'Reports',
+            'Deleted report: ' . $reportName
+        );
+
+        return redirect()->route('reports')
+            ->with('success', 'Report deleted successfully');
     }
-
-    // 🔥 DELETE REPORT
-    $report->delete();
-
-    // ✅ AUDIT LOG (SAME STYLE AS USER)
-    AuditLog::logActivity(
-        session('member_id'),
-        'Delete',
-        'Reports',
-        'Deleted report: ' . $reportName
-    );
-
-    return redirect()->route('reports')
-        ->with('success', 'Report deleted successfully');
-}
 }
